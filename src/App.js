@@ -2,11 +2,17 @@
 import { Nav, Navbar, Container, Row, Col } from "react-bootstrap";
 import "./App.css";
 import data from "./data.js";
-import { useEffect, useState } from "react";
+import { useEffect, useState, lazy, Suspense, memo } from "react";
 import { Route, Routes, Link, useNavigate, Outlet } from "react-router-dom";
-import { DetailCard, ProductCard } from "./routes/Card";
 import axios from "axios";
+import { UseSelector, useSelector } from "react-redux";
+import { useQuery } from "react-query";
 import Cart from "./routes/Cart";
+import { ProductCard, DetailCard } from "./routes/Card";
+
+// const ProductCard = lazy(() => import("./routes/Card"));
+// const DetailCard = lazy(() => import("./routes/Card"));
+// const Cart = lazy(() => import("./routes/Cart"));
 
 function App() {
   let [shoes, setShoes] = useState(data);
@@ -14,7 +20,16 @@ function App() {
   let [btnCount, setBtnCount] = useState(1);
   let [isExistNext, setIsExistNext] = useState(true);
   let [waiting, setWaiting] = useState(false);
-
+  let state = useSelector((state) => state);
+  let getWatched = JSON.parse(localStorage.getItem("watched"));
+  let result = useQuery("result", () =>
+    axios.get("https://codingapple1.github.io/userdata.json").then((a) => {
+      return a.data;
+    })
+  );
+  useEffect(() => {
+    if (!getWatched) localStorage.setItem("watched", JSON.stringify([]));
+  }, []);
   useEffect(() => {
     if (btnCount == 1) return;
     if (!isExistNext) {
@@ -38,6 +53,16 @@ function App() {
 
   return (
     <div className="App">
+      {getWatched.length >= 1 ? (
+        <div className="watched-container">
+          <p className="watched-title">최근본상품</p>
+          <div className="watched-list">
+            {JSON.parse(localStorage.getItem("watched")).map((e) => {
+              return <p>{e}번인 상품</p>;
+            })}
+          </div>
+        </div>
+      ) : null}
       <Navbar bg="dark" data-bs-theme="dark">
         <Container className="nav">
           <Link to="./" className="nav-title">
@@ -45,11 +70,14 @@ function App() {
           </Link>
           <Nav className="me-auto nav-text">
             <Link to="./product">Product</Link>
-            <Link to="./detail">Detail</Link>
             <Link to="./cart">Cart</Link>
+          </Nav>
+          <Nav className="ms-auto text-warning">
+            {result.isLoading ? "로딩중" : result.data.name}
           </Nav>
         </Container>
       </Navbar>
+      {/* <Suspense fallback={<div>로딩중</div>}> <Suspense>*/}
       <Routes>
         <Route
           path="/"
@@ -114,17 +142,6 @@ function App() {
           path="/detail"
           element={
             <div>
-              <input
-                onChange={(e) => {
-                  if (isNaN(e.target.value)) {
-                    alert("그러지마세요");
-                    e.target.value = "";
-                  } else {
-                    navigate("./detail/" + e.target.value);
-                  }
-                }}
-                className="mt-3"
-              ></input>
               <Outlet></Outlet>
             </div>
           }
@@ -132,12 +149,12 @@ function App() {
           <Route path=":id" element={<DetailCard shoes={shoes} />} />
         </Route>
         {/* <Route path="/detail/:id" element={<DetailCard shoes={shoes} />} /> */}
-        <Route path="/about" element={<About />}>
+        <Route path="/about" element={<About shoes={shoes} />}>
           <Route path="member" element={<div>멤버임</div>} />
           <Route path="location" element={<div>위치정보임</div>} />
         </Route>
         <Route path="*" element={<div>404</div>} />
-        <Route path="/event" element={<Event />}>
+        <Route path="/event" element={<Event shoes={shoes} />}>
           <Route path="one" element={<h4>첫 주문시 양배추즙 서비스</h4>} />
           <Route path="two" element={<h4>생일기념 쿠폰받기</h4>} />
         </Route>
@@ -146,21 +163,22 @@ function App() {
     </div>
   );
 }
-
-function About() {
+// memo 안에 있는 props값이 변하면 렌더링
+let About = memo(function () {
   return (
     <div>
       <h4>회사정보임</h4>
       <Outlet></Outlet>
     </div>
   );
-}
-function Event() {
+});
+
+let Event = memo(function () {
   return (
     <div>
       <h1>오늘의 이벤트</h1>
       <Outlet></Outlet>
     </div>
   );
-}
+});
 export default App;

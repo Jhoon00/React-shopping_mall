@@ -14,7 +14,9 @@ a {
 div {
   box-sizing: border-box;
 }
-
+p {
+  margin: 0;
+}
 .nav-title {
   font-size: 2.3rem;
   padding: 1rem;
@@ -34,4 +36,26 @@ div {
 .end {
   opacity: 1;
   transition: opacity 0.5s;
+}
+
+.watched-container {
+  position: fixed;
+  z-index: 10;
+  right: 0;
+  margin: 10px 10px 0 0;
+}
+.watched-title {
+  background: rgb(78, 20, 20);
+  color: white;
+  padding: 10px;
+}
+.watched-list {
+  border-width: 0px 1px 1px 1px;
+  border-color: rgb(143, 133, 133);
+  border-style: solid;
+}
+.watched-list p {
+  background: white;
+  font-size: 0.8rem;
+  padding: 0.1rem;
 }

@@ -13,7 +13,7 @@ function Cart() {
       </h6>
       <button
         onClick={() => {
-          dispatch(increaseAge(10));
+          dispatch(increaseAge(1));
         }}
       >
         +

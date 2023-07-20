@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { Col, Nav } from "react-bootstrap";
 import { useDispatch, useSelector } from "react-redux";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import Styled, { styled } from "styled-components";
 import { pushCart } from "../store";
 
@@ -18,8 +18,14 @@ let Box = styled.div`
 `;
 
 function ProductCard(props) {
+  let navigate = useNavigate();
   return (
-    <Col className="col-4 mb-3">
+    <Col
+      className="col-4 mb-3"
+      onClick={() => {
+        navigate("./../detail/" + props.id);
+      }}
+    >
       <img
         src={
           "https://codingapple1.github.io/shop/shoes" + (props.id + 1) + ".jpg"
@@ -43,6 +49,10 @@ function DetailCard(props) {
   let dispatch = useDispatch();
   let state = useSelector((state) => state);
   useEffect(() => {
+    let getWatch = JSON.parse(localStorage.getItem("watched"));
+    getWatch.push(shoe.id);
+    getWatch = [...new Set(getWatch)];
+    localStorage.setItem("watched", JSON.stringify(getWatch));
     setTimeout(() => {
       setFade("end");
     }, 100);
